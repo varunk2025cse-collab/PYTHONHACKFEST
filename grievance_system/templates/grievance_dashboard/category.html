@@ -1,0 +1,90 @@
+{% extends 'grievance_dashboard/base.html' %}
+{% block title %}Category Analysis — CivicPulse{% endblock %}
+{% block nav_title %}<span>Category</span> — Complaint Type Breakdown{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="/">Home</a> › <span>Category Analysis</span></div>
+  <h1>Complaint Category Analysis</h1>
+  <p>Breakdown of {{ categories|length }} complaint types — recurrence scores, resolution rates, and delay patterns</p>
+</div>
+
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-chart-pie"></i> Category Distribution</div></div>
+    <img src="{{ charts.category_pie }}" class="chart-img" alt="Category pie"/>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Interactive Breakdown</div></div>
+    <div style="position:relative;height:300px"><canvas id="catChart"></canvas></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-title"><i class="fas fa-table"></i> All Categories — Detailed View</div>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead>
+        <tr><th>#</th><th>Category</th><th>Total</th><th>Resolved</th><th>Resolution Rate</th><th>Avg Days</th><th>Critical</th><th>Recurrence</th></tr>
+      </thead>
+      <tbody>
+        {% for cat in categories %}
+        <tr>
+          <td style="color:var(--text3)">{{ forloop.counter }}</td>
+          <td style="color:var(--text);font-weight:600">{{ cat.category }}</td>
+          <td><span class="badge badge-primary">{{ cat.total }}</span></td>
+          <td>{{ cat.resolved }}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span>{{ cat.resolution_rate }}%</span>
+              <div class="score-bar" style="width:70px"><div class="score-fill" style="width:{{ cat.resolution_rate }}%"></div></div>
+            </div>
+          </td>
+          <td>
+            <span class="badge {% if cat.avg_resolution_days > 30 %}badge-danger{% elif cat.avg_resolution_days > 15 %}badge-warning{% else %}badge-success{% endif %}">
+              {{ cat.avg_resolution_days }}d
+            </span>
+          </td>
+          <td><span class="badge badge-warning">{{ cat.critical }}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px">
+              <div class="score-bar" style="width:80px">
+                <div class="score-fill" style="width:{{ cat.recurrence_score }}%;background:{% if cat.recurrence_score > 70 %}linear-gradient(90deg,#ef4444,#fb923c){% elif cat.recurrence_score > 40 %}linear-gradient(90deg,#f59e0b,#fbbf24){% else %}linear-gradient(90deg,#6366f1,#8b5cf6){% endif %}"></div>
+              </div>
+              <span style="font-size:11px;color:var(--text3)">{{ cat.recurrence_score }}%</span>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CDATA = {{ cat_json|safe }};
+const ctx = document.getElementById('catChart').getContext('2d');
+const PALETTE = ['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#14b8a6','#f97316','#84cc16','#3b82f6','#a855f7','#22d3ee','#fb923c','#4ade80','#f472b6','#60a5fa','#c084fc','#34d399','#fbbf24'];
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: CDATA.labels.slice(0,12),
+    datasets: [
+      { label: 'Total', data: CDATA.total.slice(0,12), backgroundColor: PALETTE.map(c=>c+'cc'), borderRadius: 5 },
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#64748b', font:{size:10} }, grid: { color: '#1e293b' } },
+      y: { ticks: { color: '#94a3b8', font:{size:10} }, grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

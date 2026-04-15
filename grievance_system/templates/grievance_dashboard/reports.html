@@ -1,0 +1,182 @@
+{% extends 'grievance_dashboard/base.html' %}
+{% block title %}Reports — CivicPulse{% endblock %}
+{% block nav_title %}<span>Reports</span> — Analytical Summary{% endblock %}
+
+{% block extra_css %}
+<style>
+.report-section { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; }
+.report-section h2 { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; color:var(--text); margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.finding-item { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.finding-item:last-child { border-bottom:none; }
+.finding-icon { font-size:18px; }
+.finding-text { font-size:13px; color:var(--text2); line-height:1.6; }
+.finding-text strong { color:var(--text); }
+@media print {
+  .sidebar, .topnav, .page-footer { display:none !important; }
+  .main-content { margin-left:0 !important; }
+  body { background:white !important; color:black !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="/">Home</a> › <span>Reports</span></div>
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <h1>Analytical Report</h1>
+      <p>Comprehensive governance performance report — Citizen Grievance Intelligence System</p>
+    </div>
+    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print Report</button>
+  </div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="report-section">
+  <h2>📋 Executive Summary</h2>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
+    <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:10px">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--primary-light)">{{ kpis.total_complaints }}</div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px">Total Complaints</div>
+    </div>
+    <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:10px">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--success)">{{ kpis.resolution_rate }}%</div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px">Resolution Rate</div>
+    </div>
+    <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:10px">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--warning)">{{ kpis.avg_resolution_days }}d</div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px">Avg Resolution</div>
+    </div>
+    <div style="text-align:center;padding:16px;background:var(--bg2);border-radius:10px">
+      <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--danger)">{{ kpis.critical_complaints }}</div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px">Critical Cases</div>
+    </div>
+  </div>
+  <p style="font-size:14px;color:var(--text2);line-height:1.8">
+    This report presents a comprehensive analysis of <strong style="color:var(--text)">{{ kpis.total_complaints }} citizen complaints</strong>
+    filed across <strong style="color:var(--text)">{{ kpis.regions_count }} regions</strong> and
+    <strong style="color:var(--text)">{{ kpis.departments_count }} departments</strong>
+    spanning 3 years (2022–2024). The data reveals systemic inefficiencies in public service delivery, particularly in
+    water supply, road maintenance, and sanitation. The average resolution time of <strong style="color:var(--danger)">{{ kpis.avg_resolution_days }} days</strong>
+    significantly exceeds the 15-day SLA, indicating structural capacity issues. Immediate governance reforms are recommended.
+  </p>
+</div>
+
+<!-- KEY FINDINGS -->
+<div class="report-section">
+  <h2>🔍 Key Findings</h2>
+  <div class="finding-item">
+    <span class="finding-icon">📊</span>
+    <div class="finding-text">
+      <strong>Complaint Volume:</strong> A total of {{ kpis.total_complaints }} complaints were recorded with
+      {{ kpis.resolved }} resolved ({{ kpis.resolution_rate }}%) and {{ kpis.pending }} pending. The critical backlog
+      of pending cases represents a significant governance gap requiring structured intervention.
+    </div>
+  </div>
+  <div class="finding-item">
+    <span class="finding-icon">🏢</span>
+    <div class="finding-text">
+      <strong>Department Performance:</strong> The top 5 departments by complaint volume include
+      {% for d in top_depts %}{{ d.department }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+      Resolution rates vary widely between departments, indicating unequal resource distribution and management capacity.
+    </div>
+  </div>
+  <div class="finding-item">
+    <span class="finding-icon">🗺️</span>
+    <div class="finding-text">
+      <strong>Regional Hotspots:</strong> High-risk regions include
+      {% for r in top_regions %}{{ r.region }}{% if not forloop.last %}, {% endif %}{% endfor %}.
+      These areas show both high complaint volumes and elevated unresolved complaint percentages, indicating systemic neglect.
+    </div>
+  </div>
+  <div class="finding-item">
+    <span class="finding-icon">🏷️</span>
+    <div class="finding-text">
+      <strong>Top Complaint Categories:</strong> The most frequent complaint types are
+      {% for c in top_cats %}{{ c.category }} ({{ c.total }}){% if not forloop.last %}, {% endif %}{% endfor %}.
+      These recurring categories point to persistent infrastructure and service delivery failures.
+    </div>
+  </div>
+  <div class="finding-item">
+    <span class="finding-icon">⏱️</span>
+    <div class="finding-text">
+      <strong>Resolution Efficiency:</strong> Average resolution time across all departments is {{ kpis.avg_resolution_days }} days.
+      Critical and High severity cases should be resolved within 7 and 15 days respectively, but current data shows consistent SLA breaches.
+    </div>
+  </div>
+  <div class="finding-item">
+    <span class="finding-icon">⭐</span>
+    <div class="finding-text">
+      <strong>Citizen Satisfaction:</strong> Average citizen rating is {{ kpis.avg_citizen_rating }}/5.
+      Departments with low resolution rates and high resolution times consistently receive lower ratings, confirming a direct correlation between efficiency and satisfaction.
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS IN REPORT -->
+<div class="report-section">
+  <h2>📈 Visual Analytics</h2>
+  <div class="grid-2">
+    <div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Complaint Trend Over Time</div>
+      <img src="{{ charts.trend }}" class="chart-img" alt="Trend"/>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Department-wise Volume</div>
+      <img src="{{ charts.dept_bar }}" class="chart-img" alt="Depts"/>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Category Distribution</div>
+      <img src="{{ charts.category_pie }}" class="chart-img" alt="Categories"/>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">Region Comparison</div>
+      <img src="{{ charts.region }}" class="chart-img" alt="Regions"/>
+    </div>
+  </div>
+</div>
+
+<!-- RECOMMENDATIONS SUMMARY -->
+<div class="report-section">
+  <h2>💡 Recommended Actions</h2>
+  {% for rec in insights.recommendations %}
+  <div class="finding-item">
+    <span class="finding-icon">{{ rec.icon }}</span>
+    <div class="finding-text">
+      <strong>[{{ rec.priority }} Priority] {{ rec.title }}:</strong> {{ rec.description }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- DEPARTMENT TABLE -->
+<div class="report-section">
+  <h2>🏢 Department Performance Summary</h2>
+  <div style="overflow-x:auto">
+    <table class="data-table">
+      <thead>
+        <tr><th>Department</th><th>Total</th><th>Resolved</th><th>Pending</th><th>Res. Rate</th><th>Avg Days</th><th>Efficiency</th></tr>
+      </thead>
+      <tbody>
+        {% for d in top_depts %}
+        <tr>
+          <td style="color:var(--text);font-weight:600">{{ d.department }}</td>
+          <td>{{ d.total }}</td>
+          <td>{{ d.resolved }}</td>
+          <td>{{ d.pending }}</td>
+          <td>{{ d.resolution_rate }}%</td>
+          <td>{{ d.avg_resolution_days }}d</td>
+          <td><span class="badge {% if d.efficiency_score >= 70 %}badge-success{% elif d.efficiency_score >= 50 %}badge-warning{% else %}badge-danger{% endif %}">{{ d.efficiency_score }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center;padding:24px;color:var(--text3);font-size:12px;border-top:1px solid var(--border)">
+  <div style="margin-bottom:6px">CivicPulse — Citizen Grievance Intelligence Platform</div>
+  <div>Report generated on: <script>document.write(new Date().toLocaleDateString('en-IN', {year:'numeric',month:'long',day:'numeric'}))</script></div>
+  <div>Data source: grievance_data.csv · Analysis Engine: Pandas + NumPy · Visualization: Matplotlib + Chart.js</div>
+</div>
+{% endblock %}

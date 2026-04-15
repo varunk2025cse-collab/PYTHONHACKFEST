@@ -1,0 +1,114 @@
+{% extends 'grievance_dashboard/base.html' %}
+{% load custom_filters %}
+{% block title %}About — CivicPulse{% endblock %}
+{% block nav_title %}<span>About</span> — Project Overview{% endblock %}
+
+{% block extra_css %}
+<style>
+.arch-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+.tech-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:var(--bg2); border:1px solid var(--border2); border-radius:20px; font-size:12px; font-weight:600; color:var(--text2); margin:4px; }
+.module-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.module-card h4 { font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.module-card p { font-size:12px; color:var(--text3); line-height:1.5; }
+.flow-step { display:flex; align-items:center; gap:12px; padding:14px; background:var(--bg2); border:1px solid var(--border2); border-radius:10px; margin-bottom:8px; }
+.flow-num { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="/">Home</a> › <span>About Project</span></div>
+  <h1>About CivicPulse</h1>
+  <p>Citizen Grievance Intelligence System — Hackathon 2024 Submission</p>
+</div>
+
+<!-- HERO ABOUT -->
+<div class="arch-card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(6,182,212,0.05))">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--text);margin-bottom:12px">
+        Transforming Governance with Data Intelligence
+      </div>
+      <p style="color:var(--text2);font-size:14px;line-height:1.8;margin-bottom:16px">
+        CivicPulse is a full-stack Django + MongoDB analytics platform that processes citizen grievance data to surface systemic public service failures, benchmark departmental performance, and generate AI-driven recommendations for governance improvement.
+      </p>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        <span class="tech-badge">🐍 Python 3.11</span>
+        <span class="tech-badge">🦄 Django 4.2</span>
+        <span class="tech-badge">🍃 MongoDB</span>
+        <span class="tech-badge">🐼 Pandas</span>
+        <span class="tech-badge">🔢 NumPy</span>
+        <span class="tech-badge">📊 Matplotlib</span>
+        <span class="tech-badge">📈 Chart.js</span>
+        <span class="tech-badge">🎨 CSS3</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="padding:16px;background:var(--card);border-radius:10px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--primary-light)">2,000+</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Grievance Records</div>
+      </div>
+      <div style="padding:16px;background:var(--card);border-radius:10px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--success)">10</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Analysis Modules</div>
+      </div>
+      <div style="padding:16px;background:var(--card);border-radius:10px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--warning)">9</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Dashboard Pages</div>
+      </div>
+      <div style="padding:16px;background:var(--card);border-radius:10px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--accent)">8+</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Chart Types</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULES -->
+<div class="arch-card" style="margin-bottom:20px">
+  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px">🧩 System Modules</div>
+  <div class="grid-3">
+    <div class="module-card"><h4>📥 Data Ingestion</h4><p>Reads grievance CSV using pandas with validation, missing value handling, and format checks.</p></div>
+    <div class="module-card"><h4>🧹 Data Cleaning</h4><p>Deduplication, null handling, column normalization, date parsing, and derived field generation.</p></div>
+    <div class="module-card"><h4>📊 EDA Engine</h4><p>Pandas + NumPy-powered analysis: KPIs, trends, dept/region/category breakdowns, efficiency metrics.</p></div>
+    <div class="module-card"><h4>🔤 Text Analysis</h4><p>Keyword frequency extraction, grievance theme clustering, and citizen dissatisfaction indicators.</p></div>
+    <div class="module-card"><h4>💡 Smart Insights</h4><p>Auto-generated alerts, efficiency scores, risk indicators, and actionable recommendations engine.</p></div>
+    <div class="module-card"><h4>📈 Chart Service</h4><p>Matplotlib chart generation: trend, bar, pie, comparison, growth rate, severity distribution.</p></div>
+    <div class="module-card"><h4>🍃 MongoDB Layer</h4><p>Stores cleaned records, insights, alerts, report history, and dashboard cache with graceful fallback.</p></div>
+    <div class="module-card"><h4>🖥️ Django Views</h4><p>10 view functions + 4 REST API endpoints with filter support and JSON responses.</p></div>
+    <div class="module-card"><h4>🎨 UI Layer</h4><p>Premium dark dashboard with sidebar, KPI cards, interactive charts, search, and filters.</p></div>
+  </div>
+</div>
+
+<!-- WORKFLOW -->
+<div class="arch-card" style="margin-bottom:20px">
+  <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px">🔄 System Workflow</div>
+  <div class="flow-step"><div class="flow-num">1</div><div><strong style="color:var(--text)">CSV Ingestion</strong> — <span style="color:var(--text3);font-size:13px">GrievanceEngine reads data/grievance_data.csv using pandas.read_csv() with file existence validation</span></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div><strong style="color:var(--text)">Data Cleaning</strong> — <span style="color:var(--text3);font-size:13px">Deduplication, null filling, date parsing, column normalization, and derived fields like resolution_days</span></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div><strong style="color:var(--text)">Analysis</strong> — <span style="color:var(--text3);font-size:13px">Pandas groupby aggregations compute department/region/category metrics, trends, and efficiency scores</span></div></div>
+  <div class="flow-step"><div class="flow-num">4</div><div><strong style="color:var(--text)">MongoDB Storage</strong> — <span style="color:var(--text3);font-size:13px">Cleaned records, insights, and alerts stored in MongoDB collections with graceful SQLite fallback</span></div></div>
+  <div class="flow-step"><div class="flow-num">5</div><div><strong style="color:var(--text)">Chart Generation</strong> — <span style="color:var(--text3);font-size:13px">Matplotlib generates 8 chart types saved as PNG files in /static/charts/</span></div></div>
+  <div class="flow-step"><div class="flow-num">6</div><div><strong style="color:var(--text)">Django Views</strong> — <span style="color:var(--text3);font-size:13px">Views compile analysis data, chart URLs, and insights into template context dictionaries</span></div></div>
+  <div class="flow-step"><div class="flow-num">7</div><div><strong style="color:var(--text)">Dashboard Rendering</strong> — <span style="color:var(--text3);font-size:13px">Jinja2 templates with Chart.js render interactive KPI cards, charts, tables, and recommendations</span></div></div>
+</div>
+
+<!-- INNOVATION + WIN POINTS -->
+<div class="grid-2">
+  <div class="arch-card">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">⚡ Innovation Points</div>
+    {% for item in "Composite Efficiency Score (40% resolution + 30% speed + 30% rating),Regional Risk Score with multi-factor weighting,Complaint Recurrence Score for pattern detection,Automated Alert Engine with severity thresholds,Text-based Grievance Theme Clustering,Graceful MongoDB fallback (no crash without DB),Single-load engine pattern (loaded once served many),Real-time filter API with dynamic KPI refresh"|split:"," %}
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)">
+      <span style="color:var(--primary-light);flex-shrink:0">✦</span> {{ item }}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="arch-card">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">🏆 Why This Wins</div>
+    {% for item in "Real-world problem solving for governance improvement,End-to-end data pipeline from CSV to visual dashboard,Premium hackathon-grade UI with dark theme,Multiple analysis dimensions (time/dept/region/category/text),Smart scoring system for objective comparison,Actionable recommendations beyond just showing data,Scalable architecture ready for production,MongoDB integration for enterprise-grade persistence"|split:"," %}
+    <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2)">
+      <span style="color:var(--success);flex-shrink:0">✓</span> {{ item }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'grievance_dashboard/base.html' %}
+{% block title %}Dashboard — CivicPulse{% endblock %}
+{% block nav_title %}<span>Dashboard</span> — Real-time Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+.canvas-container { position: relative; height: 240px; }
+.tab-row { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab-btn { padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border2); background: transparent; color: var(--text3); transition: all 0.2s; font-family: 'Space Grotesk', sans-serif; }
+.tab-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="/">Home</a> › <span>Dashboard</span></div>
+  <h1>Analytics Dashboard</h1>
+  <p>Comprehensive view of citizen grievance data — updated from latest CSV dataset</p>
+</div>
+
+<!-- FILTERS -->
+<div class="filter-row">
+  <select class="filter-select" id="f-dept"><option value="All">All Departments</option>{% for d in unique.departments %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select>
+  <select class="filter-select" id="f-region"><option value="All">All Regions</option>{% for r in unique.regions %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select>
+  <select class="filter-select" id="f-category"><option value="All">All Categories</option>{% for c in unique.categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}</select>
+  <select class="filter-select" id="f-year"><option value="All">All Years</option>{% for y in unique.years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}</select>
+  <select class="filter-select" id="f-severity"><option value="All">All Severities</option>{% for s in unique.severities %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select>
+  <button class="btn btn-primary" onclick="applyFilters()"><i class="fas fa-filter"></i> Apply</button>
+  <button class="btn btn-ghost" onclick="resetFilters()"><i class="fas fa-times"></i> Reset</button>
+</div>
+
+<!-- KPI CARDS -->
+<div class="kpi-grid" id="kpi-grid">
+  <div class="kpi-card c-primary">
+    <div class="kpi-icon"><i class="fas fa-inbox"></i></div>
+    <div class="kpi-label">Total Complaints</div>
+    <div class="kpi-value" id="kv-total">{{ kpis.total_complaints }}</div>
+    <div class="kpi-sub">Across {{ kpis.regions_count }} regions</div>
+  </div>
+  <div class="kpi-card c-success">
+    <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="kpi-label">Resolved</div>
+    <div class="kpi-value" id="kv-resolved">{{ kpis.resolved }}</div>
+    <div class="kpi-sub">{{ kpis.resolution_rate }}% resolution rate</div>
+  </div>
+  <div class="kpi-card c-danger">
+    <div class="kpi-icon"><i class="fas fa-clock"></i></div>
+    <div class="kpi-label">Pending</div>
+    <div class="kpi-value" id="kv-pending">{{ kpis.pending }}</div>
+    <div class="kpi-sub">Requires attention</div>
+  </div>
+  <div class="kpi-card c-warning">
+    <div class="kpi-icon"><i class="fas fa-hourglass-half"></i></div>
+    <div class="kpi-label">Avg Resolution</div>
+    <div class="kpi-value" id="kv-days">{{ kpis.avg_resolution_days }}<small style="font-size:14px">d</small></div>
+    <div class="kpi-sub">SLA target: 15 days</div>
+  </div>
+  <div class="kpi-card c-accent">
+    <div class="kpi-icon"><i class="fas fa-star"></i></div>
+    <div class="kpi-label">Citizen Rating</div>
+    <div class="kpi-value">{{ kpis.avg_citizen_rating }}<small style="font-size:14px">/5</small></div>
+    <div class="kpi-sub">Avg satisfaction score</div>
+  </div>
+  <div class="kpi-card c-purple">
+    <div class="kpi-icon"><i class="fas fa-exclamation-circle"></i></div>
+    <div class="kpi-label">Critical Cases</div>
+    <div class="kpi-value">{{ kpis.critical_complaints }}</div>
+    <div class="kpi-sub">Requires priority action</div>
+  </div>
+</div>
+
+<!-- TREND CHART + STATUS PIE -->
+<div class="grid-12" style="margin-bottom:20px">
+  <div class="chart-card">
+    <div class="card-header">
+      <div class="card-title"><i class="fas fa-chart-line"></i> Complaint Trend</div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="showTrendDataset(this,'total')">All</button>
+        <button class="tab-btn" onclick="showTrendDataset(this,'resolved')">Resolved</button>
+        <button class="tab-btn" onclick="showTrendDataset(this,'pending')">Pending</button>
+      </div>
+    </div>
+    <div class="canvas-container"><canvas id="trendChart"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-pie-chart"></i> Status Distribution</div></div>
+    <div class="canvas-container"><canvas id="statusChart"></canvas></div>
+  </div>
+</div>
+
+<!-- DEPT BAR + SEVERITY -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-building"></i> Dept-wise Volume</div></div>
+    <div style="text-align:center">
+      <img src="{{ charts.dept_bar }}" class="chart-img" alt="Department chart"/>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-layer-group"></i> Severity Breakdown</div></div>
+    <div style="text-align:center">
+      <img src="{{ charts.severity }}" class="chart-img" alt="Severity chart"/>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY PIE + RESOLUTION TIME -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-tags"></i> Category Distribution</div></div>
+    <div style="text-align:center">
+      <img src="{{ charts.category_pie }}" class="chart-img" alt="Category chart"/>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-tachometer-alt"></i> Resolution Time by Dept</div></div>
+    <div style="text-align:center">
+      <img src="{{ charts.resolution_time }}" class="chart-img" alt="Resolution time chart"/>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY GROWTH + MODE CHART -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-chart-bar"></i> Monthly Growth Rate</div></div>
+    <div style="text-align:center">
+      <img src="{{ charts.monthly_growth }}" class="chart-img" alt="Monthly growth chart"/>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-mobile-alt"></i> Complaint Mode</div></div>
+    <div class="canvas-container"><canvas id="modeChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ALERTS + TOP DEPTS TABLE -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-bell"></i> Active Alerts</div></div>
+    {% for alert in insights.alerts %}
+    <div class="alert-item {{ alert.type }}">
+      <span class="alert-icon">{{ alert.icon }}</span>
+      <span class="alert-text">{{ alert.message }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-trophy"></i> Dept Performance</div></div>
+    <table class="data-table">
+      <thead><tr><th>Department</th><th>Total</th><th>Resolved%</th><th>Efficiency</th></tr></thead>
+      <tbody>
+        {% for d in insights.top_complaint_departments %}
+        <tr>
+          <td style="color:var(--text)">{{ d.department }}</td>
+          <td><span class="badge badge-primary">{{ d.total }}</span></td>
+          <td>{{ d.resolution_rate }}%</td>
+          <td>
+            <div style="font-size:12px;color:var(--text3)">Loading…</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- EFFICIENCY CHART -->
+<div class="chart-card" style="margin-bottom:20px">
+  <div class="card-header"><div class="card-title"><i class="fas fa-medal"></i> Department Efficiency Comparison</div></div>
+  <div style="text-align:center">
+    <img src="{{ charts.efficiency }}" class="chart-img" alt="Efficiency chart"/>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TREND = {{ trend_json|safe }};
+const STATUS = {{ status_json|safe }};
+const MODE = {{ mode_json|safe }};
+
+const COLORS = ['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899'];
+
+// Trend Chart
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+const trendChart = new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: TREND.labels,
+    datasets: [
+      { label: 'Total', data: TREND.total, borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, pointRadius: 2 },
+      { label: 'Resolved', data: TREND.resolved, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', fill: true, tension: 0.4, pointRadius: 2 },
+      { label: 'Pending', data: TREND.pending, borderColor: '#f59e0b', fill: false, tension: 0.4, pointRadius: 2, borderDash: [4,3] }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#94a3b8', font: {size:11} } } },
+    scales: {
+      x: { ticks: { color: '#64748b', maxTicksLimit: 12, font: {size:10} }, grid: { color: '#1e293b' } },
+      y: { ticks: { color: '#64748b', font: {size:10} }, grid: { color: '#1e293b' } }
+    }
+  }
+});
+
+function showTrendDataset(btn, type) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const vis = { total: [true,false,false], resolved: [false,true,false], pending: [false,false,true] };
+  trendChart.data.datasets.forEach((ds,i) => ds.hidden = !vis[type][i]);
+  trendChart.update();
+}
+
+// Status Donut
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+  type: 'doughnut',
+  data: {
+    labels: STATUS.labels,
+    datasets: [{ data: STATUS.values, backgroundColor: COLORS, borderWidth: 2, borderColor: '#111827' }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { color: '#94a3b8', font: {size:11}, padding: 12 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${((ctx.raw/STATUS.values.reduce((a,b)=>a+b,0))*100).toFixed(1)}%)` } }
+    },
+    cutout: '65%'
+  }
+});
+
+// Mode Chart
+const modeCtx = document.getElementById('modeChart').getContext('2d');
+new Chart(modeCtx, {
+  type: 'bar',
+  data: {
+    labels: MODE.labels,
+    datasets: [{ label: 'Complaints', data: MODE.values, backgroundColor: COLORS.map(c=>c+'bb'), borderRadius: 6 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#64748b', font:{size:10} }, grid: { color: '#1e293b' } },
+      y: { ticks: { color: '#94a3b8', font:{size:11} }, grid: { display: false } }
+    }
+  }
+});
+
+// Filter functions
+function applyFilters() {
+  const params = new URLSearchParams({
+    department: document.getElementById('f-dept').value,
+    region: document.getElementById('f-region').value,
+    category: document.getElementById('f-category').value,
+    year: document.getElementById('f-year').value,
+    severity: document.getElementById('f-severity').value,
+  });
+  fetch('/api/filtered/?' + params)
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById('kv-total').textContent = data.total;
+      document.getElementById('kv-resolved').textContent = data.resolved;
+      document.getElementById('kv-pending').textContent = data.pending;
+      document.getElementById('kv-days').innerHTML = data.avg_resolution_days + '<small style="font-size:14px">d</small>';
+    });
+}
+function resetFilters() {
+  ['f-dept','f-region','f-category','f-year','f-severity'].forEach(id => document.getElementById(id).value = 'All');
+  fetch('/api/kpis/').then(r=>r.json()).then(data => {
+    document.getElementById('kv-total').textContent = data.total_complaints;
+    document.getElementById('kv-resolved').textContent = data.resolved;
+    document.getElementById('kv-pending').textContent = data.pending;
+    document.getElementById('kv-days').innerHTML = data.avg_resolution_days + '<small style="font-size:14px">d</small>';
+  });
+}
+</script>
+{% endblock %}

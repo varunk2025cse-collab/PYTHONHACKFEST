@@ -1,0 +1,180 @@
+{% extends 'grievance_dashboard/base.html' %}
+{% load custom_filters %}
+{% block title %}Recommendations — CivicPulse{% endblock %}
+{% block nav_title %}<span>Smart Recommendations</span> — Decision Intelligence{% endblock %}
+
+{% block extra_css %}
+<style>
+.action-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.action-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(99,102,241,0.12); }
+.action-card::after {
+  content: '';
+  position: absolute;
+  right: -20px; bottom: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  opacity: 0.05;
+  background: var(--primary);
+}
+.action-number {
+  position: absolute;
+  top: 16px; right: 16px;
+  font-family: 'Syne', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--border2);
+}
+.decision-panel {
+  background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.05));
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="/">Home</a> › <span>Recommendations</span></div>
+  <h1>AI-Powered Recommendations</h1>
+  <p>Data-driven actionable insights and governance improvement strategies generated from grievance pattern analysis</p>
+</div>
+
+<!-- DECISION SUMMARY PANEL -->
+<div class="decision-panel">
+  <div style="display:flex;align-items:flex-start;gap:16px">
+    <div style="font-size:40px">🎯</div>
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px">Executive Decision Brief</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.7;max-width:700px">
+        Analysis of <strong style="color:var(--primary-light)">{{ kpis.total_complaints }} citizen complaints</strong> reveals that
+        <strong style="color:var(--warning)">{{ kpis.pending }} cases remain unresolved</strong> with an average resolution time of
+        <strong style="color:var(--danger)">{{ kpis.avg_resolution_days }} days</strong> — exceeding the 15-day SLA target.
+        The top 3 departments account for over 45% of all complaints. Immediate structural interventions are recommended
+        across water supply, roads, and sanitation sectors.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS -->
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <div class="card-title"><i class="fas fa-bell"></i> System Alerts Requiring Immediate Attention</div>
+    <span class="badge badge-danger">{{ alerts|length }} Active</span>
+  </div>
+  {% for alert in alerts %}
+  <div class="alert-item {{ alert.type }}">
+    <span class="alert-icon">{{ alert.icon }}</span>
+    <div>
+      <div class="alert-text">{{ alert.message }}</div>
+    </div>
+  </div>
+  {% empty %}
+  <p style="color:var(--text3);font-size:13px;padding:12px 0">No critical alerts at this time. System performing within normal parameters.</p>
+  {% endfor %}
+</div>
+
+<!-- RECOMMENDATIONS GRID -->
+<div style="margin-bottom:8px;font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--text)">
+  <i class="fas fa-lightbulb" style="color:var(--warning);margin-right:8px"></i>Strategic Recommendations ({{ recommendations|length }})
+</div>
+<div class="grid-2" style="margin-bottom:24px">
+  {% for rec in recommendations %}
+  <div class="action-card">
+    <div class="action-number">{{ forloop.counter }}</div>
+    <div class="rec-header">
+      <div class="rec-icon">{{ rec.icon }}</div>
+      <div>
+        <div class="rec-title">{{ rec.title }}</div>
+        <span class="priority-badge priority-{{ rec.priority }}">{{ rec.priority }} Priority</span>
+      </div>
+    </div>
+    <div class="rec-desc">{{ rec.description }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- WORST DEPARTMENTS & HIGH RISK REGIONS -->
+<div class="grid-2" style="margin-bottom:20px">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-arrow-down"></i> Underperforming Departments</div></div>
+    <table class="data-table">
+      <thead><tr><th>Department</th><th>Efficiency</th><th>Resolution%</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for d in worst_depts %}
+        <tr>
+          <td style="color:var(--text);font-weight:600">{{ d.department }}</td>
+          <td><span class="badge badge-danger">{{ d.efficiency_score }}</span></td>
+          <td>{{ d.resolution_rate }}%</td>
+          <td><span class="badge badge-warning">Review</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-map-marker-alt"></i> High Risk Regions</div></div>
+    <table class="data-table">
+      <thead><tr><th>Region</th><th>Risk Score</th><th>Unresolved%</th><th>Total</th></tr></thead>
+      <tbody>
+        {% for r in high_risk_regions %}
+        <tr>
+          <td style="color:var(--text);font-weight:600">{{ r.region }}</td>
+          <td><span class="badge badge-danger">{{ r.risk_score }}</span></td>
+          <td>{{ r.unresolved_rate }}%</td>
+          <td><span class="badge badge-primary">{{ r.total }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FUTURE SCOPE -->
+<div class="card">
+  <div class="card-header"><div class="card-title"><i class="fas fa-rocket"></i> Future Scope & AI Enhancements</div></div>
+  <div class="grid-3">
+
+    <div style="padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border2)">
+      <div style="font-size:20px;margin-bottom:6px">🤖</div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px">AI Predictive Model</div>
+      <div style="font-size:12px;color:var(--text3)">Forecast complaint spikes before they occur using LSTM time-series prediction on historical data.</div>
+    </div>
+    <div style="padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border2)">
+      <div style="font-size:20px;margin-bottom:6px">😊</div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px">Sentiment Analysis</div>
+      <div style="font-size:12px;color:var(--text3)">Fine-tune BERT model on citizen complaint text to classify urgency and emotional tone automatically.</div>
+    </div>
+    <div style="padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border2)">
+      <div style="font-size:20px;margin-bottom:6px">🗺️</div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px">GIS Heat Mapping</div>
+      <div style="font-size:12px;color:var(--text3)">Integrate GPS coordinates to render real-time complaint density heatmaps on interactive city maps.</div>
+    </div>
+    <div style="padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border2)">
+      <div style="font-size:20px;margin-bottom:6px">🔀</div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px">Auto-routing Engine</div>
+      <div style="font-size:12px;color:var(--text3)">ML-based complaint routing that automatically assigns cases to the most efficient officer available.</div>
+    </div>
+    <div style="padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border2)">
+      <div style="font-size:20px;margin-bottom:6px">💬</div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px">Citizen Chatbot</div>
+      <div style="font-size:12px;color:var(--text3)">Conversational AI agent for citizens to file complaints, get real-time status, and receive service updates.</div>
+    </div>
+    <div style="padding:14px;background:var(--bg2);border-radius:8px;border:1px solid var(--border2)">
+      <div style="font-size:20px;margin-bottom:6px">⛓️</div>
+      <div style="font-weight:600;color:var(--text);font-size:13px;margin-bottom:4px">Blockchain Audit Trail</div>
+      <div style="font-size:12px;color:var(--text3)">Immutable record-keeping of all complaint actions ensuring transparency and accountability at every stage.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

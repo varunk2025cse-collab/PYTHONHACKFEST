@@ -1,0 +1,120 @@
+{% extends 'grievance_dashboard/base.html' %}
+{% block title %}Admin Panel — CivicPulse{% endblock %}
+{% block nav_title %}<span>Admin Panel</span> — System Configuration{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="breadcrumb"><a href="/">Home</a> › <span>Admin Panel</span></div>
+  <h1>System Administration</h1>
+  <p>Data status, system health, and configuration overview</p>
+</div>
+
+<!-- SYSTEM STATUS -->
+<div class="kpi-grid" style="margin-bottom:24px">
+  <div class="kpi-card c-primary">
+    <div class="kpi-icon"><i class="fas fa-database"></i></div>
+    <div class="kpi-label">MongoDB Status</div>
+    <div class="kpi-value" style="font-size:18px">{% if mongo_status %}🟢 Connected{% else %}🟡 Offline{% endif %}</div>
+    <div class="kpi-sub">{% if mongo_status %}Persistence active{% else %}Running in memory mode{% endif %}</div>
+  </div>
+  <div class="kpi-card c-success">
+    <div class="kpi-icon"><i class="fas fa-file-csv"></i></div>
+    <div class="kpi-label">CSV Dataset</div>
+    <div class="kpi-value" style="font-size:18px">🟢 Loaded</div>
+    <div class="kpi-sub">{{ kpis.total_complaints }} records</div>
+  </div>
+  <div class="kpi-card c-accent">
+    <div class="kpi-icon"><i class="fas fa-chart-bar"></i></div>
+    <div class="kpi-label">Charts Generated</div>
+    <div class="kpi-value">8</div>
+    <div class="kpi-sub">Matplotlib PNG files</div>
+  </div>
+  <div class="kpi-card c-warning">
+    <div class="kpi-icon"><i class="fas fa-cogs"></i></div>
+    <div class="kpi-label">Analysis Engine</div>
+    <div class="kpi-value" style="font-size:18px">🟢 Ready</div>
+    <div class="kpi-sub">GrievanceEngine v2.0</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-info-circle"></i> Dataset Information</div></div>
+    <table class="data-table">
+      <tbody>
+        <tr><td style="color:var(--text3)">CSV Path</td><td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent)">{{ csv_path }}</td></tr>
+        <tr><td style="color:var(--text3)">Total Records</td><td><span class="badge badge-primary">{{ kpis.total_complaints }}</span></td></tr>
+        <tr><td style="color:var(--text3)">Departments</td><td>{{ kpis.departments_count }}</td></tr>
+        <tr><td style="color:var(--text3)">Regions</td><td>{{ kpis.regions_count }}</td></tr>
+        <tr><td style="color:var(--text3)">Categories</td><td>{{ kpis.categories_count }}</td></tr>
+        <tr><td style="color:var(--text3)">Critical Cases</td><td><span class="badge badge-danger">{{ kpis.critical_complaints }}</span></td></tr>
+        <tr><td style="color:var(--text3)">Avg Resolution</td><td>{{ kpis.avg_resolution_days }} days</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="fas fa-list"></i> Available Departments</div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      {% for d in unique.departments %}
+      <span class="badge badge-primary">{{ d }}</span>
+      {% endfor %}
+    </div>
+    <div style="margin-top:16px">
+      <div class="card-title" style="margin-bottom:8px">Available Regions</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        {% for r in unique.regions %}
+        <span class="badge badge-info">{{ r }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:20px">
+  <div class="card-header"><div class="card-title"><i class="fas fa-terminal"></i> API Endpoints</div></div>
+  <table class="data-table">
+    <thead><tr><th>Endpoint</th><th>Method</th><th>Description</th><th>Test</th></tr></thead>
+    <tbody>
+      <tr><td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">/api/kpis/</td><td><span class="badge badge-success">GET</span></td><td>Summary KPI metrics</td><td><a href="/api/kpis/" target="_blank" class="badge badge-primary">Test →</a></td></tr>
+      <tr><td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">/api/trend/</td><td><span class="badge badge-success">GET</span></td><td>Monthly complaint trend data</td><td><a href="/api/trend/" target="_blank" class="badge badge-primary">Test →</a></td></tr>
+      <tr><td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">/api/filtered/</td><td><span class="badge badge-success">GET</span></td><td>Filtered KPIs (dept/region/year/severity)</td><td><a href="/api/filtered/?department=All" target="_blank" class="badge badge-primary">Test →</a></td></tr>
+      <tr><td style="font-family:'JetBrains Mono',monospace;color:var(--accent)">/api/search/</td><td><span class="badge badge-success">GET</span></td><td>Full-text complaint search</td><td><a href="/api/search/?q=water" target="_blank" class="badge badge-primary">Test →</a></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="margin-top:20px">
+  <div class="card-header"><div class="card-title"><i class="fas fa-folder-open"></i> Project Structure</div></div>
+  <pre style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);line-height:1.8;background:var(--bg2);padding:16px;border-radius:8px;overflow-x:auto">grievance_system/
+├── data/
+│   ├── grievance_data.csv          ← 2,000 complaint records
+│   └── generate_data.py            ← Dataset generator
+├── grievance_dashboard/
+│   ├── analysis/
+│   │   └── engine.py               ← Core analytics engine
+│   ├── services/
+│   │   ├── chart_service.py        ← Matplotlib chart generator
+│   │   └── mongo_service.py        ← MongoDB integration
+│   ├── templates/grievance_dashboard/
+│   │   ├── base.html               ← Base layout with sidebar
+│   │   ├── home.html               ← Landing page
+│   │   ├── dashboard.html          ← Main analytics dashboard
+│   │   ├── department.html         ← Dept analysis
+│   │   ├── region.html             ← Region analysis
+│   │   ├── category.html           ← Category analysis
+│   │   ├── text_insights.html      ← NLP insights
+│   │   ├── recommendations.html    ← AI recommendations
+│   │   ├── reports.html            ← Full report
+│   │   ├── about.html              ← Project info
+│   │   └── admin_panel.html        ← This page
+│   ├── views.py                    ← 10 views + 4 API endpoints
+│   └── urls.py                     ← URL routing
+├── static/
+│   └── charts/                     ← Generated PNG charts
+├── grievance_system/
+│   ├── settings.py
+│   └── urls.py
+└── manage.py</pre>
+</div>
+{% endblock %}
