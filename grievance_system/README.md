@@ -1,5 +1,5 @@
 # 🏛️ CivicPulse — Citizen Grievance Intelligence System
-### Hackathon 2024 · Governance Analytics Platform
+### Hackathon 2026 · Governance Analytics Platform
 
 ---
 
@@ -245,32 +245,6 @@ http://127.0.0.1:8000/
 ```
 
 ---
-
-## 🎤 Viva Explanation Points
-
-1. **Why Django?** — Mature MVC framework with ORM, templating, and URL routing — ideal for analytics dashboards
-2. **Why MongoDB?** — Schema-less document storage perfect for heterogeneous analytics results and alert logs
-3. **What is the Efficiency Score?** — Composite metric: 40% resolution rate + 30% speed score (inverse of avg days) + 30% citizen rating
-4. **How does text analysis work?** — Regex tokenization → stop word filtering → Counter.most_common() for frequencies; theme clustering via keyword matching
-5. **How is risk score calculated?** — (complaint density ×40) + (unresolved rate ×35) + (critical ratio ×25)
-6. **What happens without MongoDB?** — MongoService.is_connected() returns False → all storage calls are no-ops → full UI works with in-memory data
-7. **How are charts generated?** — Matplotlib with Agg backend renders to PNG files in /static/charts/ served via Django static files
-
----
-
-## 🏆 Hackathon Presentation Points
-
-1. **Real-world impact** — Helps 1,000+ government bodies reduce complaint backlogs
-2. **Complete pipeline** — CSV → Clean → Analyze → Store → Visualize → Recommend
-3. **Multi-dimensional analysis** — Time, department, region, category, text — 5 analysis axes
-4. **Premium UI** — Hackathon-grade dark dashboard that rivals commercial analytics products
-5. **Smart scoring** — Objective composite scores replace subjective rankings
-6. **Automated intelligence** — Alerts + recommendations generated without manual intervention
-7. **Extensible architecture** — Plug in any CSV; MongoDB stores everything; REST APIs ready for mobile
-8. **Future-ready** — Architecture supports ML prediction, GIS mapping, and chatbot integration
-
----
-
 ## 🔮 Future Enhancements
 
 - LSTM time-series model for complaint spike prediction
